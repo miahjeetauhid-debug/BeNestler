@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CUNY Housing Finder — demo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="logo">🏙️</span>
+            <div>
+                <h1>CUNY Housing Finder</h1>
+                <p>Campus pins from official CUNY dataset; listings are student-submitted.</p>
+            </div>
+        </div>
+
+        <nav class="tabs">
+            <button id="tabMap" class="tab active">Map</button>
+            <button id="tabAdd" class="tab">Add listing</button>
+            <button id="tabFind" class="tab">Find listing</button>
+            <button id="tabList" class="tab">Listings</button>
+        </nav>
+
+        <div class="mode-toggle" title="Choose where listings are stored">
+            <label class="switch">
+                <input id="toggleLocal" type="checkbox">
+                <span class="slider"></span>
+            </label>
+            <span id="modeLabel" class="mode-label">Cloud (Supabase)</span>
+            <button id="btnClearLocal" class="btn btn-mini" title="Clear locally saved listings">Clear local</button>
+        </div>
+    </header>
+
+    <!-- MAP -->
+    <section id="sectionMap" class="page visible">
+        <div id="map"></div>
+        <div class="map-actions">
+            <div class="locate-group">
+                <button id="btnLocateMe" class="btn">Locate me</button>
+                <div class="radius-chips" aria-label="Locate radius">
+                    <button class="chip" data-radius="1">1 km</button>
+                    <button class="chip chip-active" data-radius="3">3 km</button>
+                    <button class="chip" data-radius="5">5 km</button>
+                </div>
+            </div>
+            <button id="btnResetView" class="btn">Reset view</button>
+            <button id="btnClearSearchPin" class="btn">Clear search pin</button>
+        </div>
+        <footer class="legend">
+            <span class="dot dot-need"></span> Needs room
+            <span class="dot dot-have"></span> Room available
+            <span class="dot dot-campus"></span> CUNY campus
+        </footer>
+    </section>
+
+    <!-- ADD LISTING -->
+    <section id="sectionAdd" class="page">
+        <div class="form">
+            <div class="row">
+                <label>Type</label>
+                <select id="inputType">
+                    <option value="need">I need a room</option>
+                    <option value="have">Room available</option>
+                </select>
+
+                <label>Campus (optional)</label>
+                <div class="inline">
+                    <input id="inputCampus" type="text" placeholder="e.g., BMCC" />
+                    <button id="btnSnapCampus" class="btn btn-mini">Snap to campus</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <label>Title</label>
+                <input id="inputTitle" type="text" placeholder="e.g., Room near BMCC, $900/mo" />
+            </div>
+
+            <div class="row">
+                <label>Description</label>
+                <textarea id="inputDesc" rows="4" placeholder="Short details (lease, roommates, etc.)"></textarea>
+            </div>
+
+            <div class="row">
+                <label>Monthly price (optional)</label>
+                <input id="inputPrice" type="number" inputmode="numeric" placeholder="e.g., 900" />
+
+                <label>Contact</label>
+                <input id="inputContact" type="text" placeholder="email/phone/IG handle" />
+            </div>
+
+            <div class="row">
+                <label>Latitude (optional)</label>
+                <input id="inputLat" type="text" placeholder="Click map or use search" />
+
+                <label>Longitude (optional)</label>
+                <input id="inputLng" type="text" placeholder="Click map or use search" />
+
+                <label>Location search (optional)</label>
+                <div class="inline">
+                    <input id="inputSearch" type="text" placeholder="e.g., 199 Chambers St, NYC" />
+                    <button id="btnSearch" class="btn">Search</button>
+                </div>
+            </div>
+
+            <p class="hint">Tip: include contact + short title so it shows well in cluster popups.</p>
+
+            <button id="btnPost" class="btn btn-primary">Post listing</button>
+            <div id="postStatus" class="status"></div>
+        </div>
+    </section>
+
+    <!-- FIND LISTING -->
+    <section id="sectionFind" class="page">
+        <div class="form">
+            <div class="row">
+                <label>Keyword (title/description/campus)</label>
+                <input id="filterKeyword" type="text" placeholder="e.g., BMCC, Queens, studio" />
+            </div>
+
+            <div class="row">
+                <label>Type</label>
+                <select id="filterType">
+                    <option value="">All types</option>
+                    <option value="need">Needs room</option>
+                    <option value="have">Room available</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <label>Campus</label>
+                <select id="filterCampus">
+                    <option value="">Loading…</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <label>Min $</label>
+                <input id="filterMin" type="number" inputmode="numeric" placeholder="Min $" />
+                <label>Max $</label>
+                <input id="filterMax" type="number" inputmode="numeric" placeholder="Max $" />
+            </div>
+
+            <div class="row">
+                <label class="chk">
+                    <input id="filterMine" type="checkbox" />
+                    My listings only
+                </label>
+            </div>
+
+            <div class="row">
+                <button id="btnApplyFilters" class="btn btn-primary">Apply filters</button>
+                <button id="btnClearFilters" class="btn">Clear</button>
+            </div>
+
+            <p class="hint">Filters update the map and listings.</p>
+        </div>
+    </section>
+
+    <!-- LISTINGS -->
+    <section id="sectionList" class="page">
+        <div class="list-header">
+            <h2>Recent listings</h2>
+            <div class="list-toolbar">
+                <button id="btnMyListings" class="btn btn-mini" title="Show only the listings you posted">My
+                    listings</button>
+            </div>
+        </div>
+        <div id="listingsContainer" class="listings"></div>
+    </section>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <!-- libs -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+
+    <!-- app -->
+    <script src="app.js"></script>
+</body>
+
+</html>
