@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>BeNestler</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <div class="app-wrapper">
+        <header class="topbar">
+            <div class="brand">
+                <img class="logo" src="mylogo.png" alt="BeNestler" />
+                <div>
+                    <h1>BeNestler</h1>
+                    <p>Where comfort meets community.</p>
+                </div>
+            </div>
+
+            <nav class="tabs">
+                <button id="tabMap" class="tab active">Map</button>
+                <button id="tabAdd" class="tab">Add listing</button>
+                <button id="tabFind" class="tab">Find listing</button>
+                <button id="tabList" class="tab">Listings</button>
+            </nav>
+
+            <div class="mode-toggle" title="Choose where listings are stored">
+                <label class="switch">
+                    <input id="toggleLocal" type="checkbox">
+                    <span class="slider"></span>
+                </label>
+                <span id="modeLabel" class="mode-label">Cloud (Supabase)</span>
+                <button id="btnClearLocal" class="btn btn-mini" title="Clear locally saved listings">Clear local</button>
+            </div>
+        </header>
+
+        <section id="sectionMap" class="page visible">
+            <div id="map"></div>
+            <div class="map-actions">
+                <div class="locate-group">
+                    <button id="btnLocateMe" class="btn">Locate me</button>
+                    <div class="radius-chips" aria-label="Locate radius">
+                        <button class="chip" data-radius="1">1 km</button>
+                        <button class="chip chip-active" data-radius="3">3 km</button>
+                        <button class="chip" data-radius="5">5 km</button>
+                    </div>
+                </div>
+                <button id="btnResetView" class="btn">Reset view</button>
+                <button id="btnClearSearchPin" class="btn">Clear search pin</button>
+            </div>
+            <footer class="legend">
+                <span class="dot dot-need"></span> Needs room
+                <span class="dot dot-have"></span> Room available
+                <span class="dot dot-campus"></span> CUNY campus
+            </footer>
+        </section>
+
+        <section id="sectionAdd" class="page">
+            <div class="form">
+                <div class="row">
+                    <label>Type</label>
+                    <select id="inputType">
+                        <option value="need">I need a room</option>
+                        <option value="have">Room available</option>
+                    </select>
+
+                    <label>Campus (optional)</label>
+                    <div class="inline">
+                        <input id="inputCampus" type="text" placeholder="e.g., BMCC" />
+                        <button id="btnSnapCampus" class="btn btn-mini">Snap to campus</button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <label>Title</label>
+                    <input id="inputTitle" type="text" placeholder="e.g., Room near BMCC, $900/mo" />
+                </div>
+
+                <div class="row">
+                    <label>Description</label>
+                    <textarea id="inputDesc" rows="4" placeholder="Short details (lease, roommates, etc.)"></textarea>
+                </div>
+
+                <div class="row">
+                    <label>Monthly price (optional)</label>
+                    <input id="inputPrice" type="number" inputmode="numeric" placeholder="e.g., 900" />
+
+                    <label>Contact</label>
+                    <input id="inputContact" type="text" placeholder="email/phone/IG handle" />
+                </div>
+
+                <div class="row">
+                    <label>Latitude (optional)</label>
+                    <input id="inputLat" type="text" placeholder="Click map or use search" />
+
+                    <label>Longitude (optional)</label>
+                    <input id="inputLng" type="text" placeholder="Click map or use search" />
+
+                    <label>Location search (optional)</label>
+                    <div class="inline">
+                        <input id="inputSearch" type="text" placeholder="e.g., 199 Chambers St, NYC" />
+                        <button id="btnSearch" class="btn">Search</button>
+                    </div>
+                </div>
+
+                <p class="hint">Tip: include contact + short title so it shows well in cluster popups.</p>
+
+                <button id="btnPost" class="btn btn-primary">Post listing</button>
+                <div id="postStatus" class="status"></div>
+            </div>
+        </section>
+
+        <section id="sectionFind" class="page">
+            <div class="form">
+                <div class="row">
+                    <label>Keyword (title/description/campus)</label>
+                    <input id="filterKeyword" type="text" placeholder="e.g., BMCC, Queens, studio" />
+                </div>
+
+                <div class="row">
+                    <label>Type</label>
+                    <select id="filterType">
+                        <option value="">All types</option>
+                        <option value="need">Needs room</option>
+                        <option value="have">Room available</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <label>Campus</label>
+                    <select id="filterCampus">
+                        <option value="">Loading…</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <label>Min $</label>
+                    <input id="filterMin" type="number" inputmode="numeric" placeholder="Min $" />
+                    <label>Max $</label>
+                    <input id="filterMax" type="number" inputmode="numeric" placeholder="Max $" />
+                </div>
+
+                <div class="row">
+                    <label class="chk">
+                        <input id="filterMine" type="checkbox" />
+                        My listings only
+                    </label>
+                </div>
+
+                <div class="row">
+                    <button id="btnApplyFilters" class="btn btn-primary">Apply filters</button>
+                    <button id="btnClearFilters" class="btn">Clear</button>
+                </div>
+
+                <p class="hint">Filters update the map and listings.</p>
+            </div>
+        </section>
+
+        <section id="sectionList" class="page">
+            <div class="list-header">
+                <h2>Recent listings</h2>
+                <div class="list-toolbar">
+                    <button id="btnMyListings" class="btn btn-mini" title="Show only the listings you posted">My
+                        listings</button>
+                </div>
+            </div>
+            <div id="listingsContainer" class="listings"></div>
+        </section>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+
+    <script src="app.js"></script>
+
+    <!-- Mini Helper Bot (single-file drop-in) -->
+    <style>
+    .helper-fab{position:fixed;right:18px;bottom:18px;z-index:9999;background:#2b82f6;color:#fff;
+        border:none;border-radius:999px;padding:12px 14px;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.35);cursor:pointer}
+    .helper-panel{position:fixed;right:18px;bottom:80px;width:280px;max-height:60vh;background:#0f151f;color:#e6eef7;
+        border:1px solid #243244;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;z-index:9999}
+    .helper-header{padding:10px 12px;background:#121821;border-bottom:1px solid #1a2430;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+    .helper-body{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+    .hb-msg{font-size:14px;line-height:1.35;background:#121821;border:1px solid #1a2430;border-radius:10px;padding:8px 10px}
+    .hb-user{align-self:flex-end;background:#1a2736}
+    .helper-input{display:flex;gap:6px;padding:10px;border-top:1px solid #1a2430}
+    .helper-input input{flex:1;background:#0f151f;color:#e6eef7;border:1px solid #243244;border-radius:10px;padding:8px 10px}
+    .helper-input button{background:#2b82f6;color:#fff;border:none;border-radius:10px;padding:8px 12px;cursor:pointer}
+    </style>
+    <div class="helper-panel" id="helperPanel">
+    <div class="helper-header">
+        <span>Assistant</span>
+        <button id="hbClose" style="background:transparent;color:#a6b3c2;border:none;cursor:pointer">✕</button>
+    </div>
+    <div class="helper-body" id="hbBody"></div>
+    <div class="helper-input">
+        <input id="hbInput" type="text" placeholder="Ask about the map, posting, filters…" />
+        <button id="hbSend">Send</button>
+    </div>
+    </div>
+    <button class="helper-fab" id="helperFab">❓ Help</button>
+    <script>
+    (function(){
+    const fab = document.getElementById('helperFab');
+    const panel = document.getElementById('helperPanel');
+    const body = document.getElementById('hbBody');
+    const input = document.getElementById('hbInput');
+    const send = document.getElementById('hbSend');
+    const closeBtn = document.getElementById('hbClose');
+
+    function show(){ panel.style.display='flex'; input.focus(); }
+    function hide(){ panel.style.display='none'; }
+    fab.onclick = () => { panel.style.display === 'flex' ? hide() : show(); };
+    closeBtn.onclick = hide;
+
+    function addMsg(text, user=false){
+        const div = document.createElement('div');
+        div.className = 'hb-msg' + (user ? ' hb-user' : '');
+        div.textContent = text;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    const faq = [
+        {k:/\b(locat|near|radius|km|find me)\b/i, a:()=> "Use the ‘Locate me’ button on Map. Choose 1/3/5 km chips to set the radius, then we draw a circle and center the map there."},
+        {k:/\b(post|add|create|listing)\b/i, a:()=> "Go to ‘Add listing’. Fill type, title, price (optional), and contact. You can snap to a campus or use a search pin for exact lat/lng. Then click ‘Post listing’."},
+        {k:/\b(search|address|campus pin|geocode)\b/i, a:()=> "In Map, type an address or campus in the search box and press ‘Search’. We drop a temporary pin and center the map there."},
+        {k:/\b(filter|find|price|min|max|keyword|mine)\b/i, a:()=> "Open ‘Find listing’. Filter by type, campus, price range, keyword, or ‘My listings only’. Click ‘Apply filters’; it updates both the map and the list."},
+        {k:/\bdelete|remove\b/i, a:()=> "Open ‘Listings’ → ‘My listings’. If you posted it, you’ll see a Delete button on the card. Click it to remove your own listing."},
+        {k:/\bcloud|supabase|local\b/i, a:()=> "Top-right switch: ‘Cloud (Supabase)’ vs ‘Local only’. You can clear local data with the ‘Clear local’ button. Cloud mode requires connectivity."},
+        {k:/\bsafety|scam|secure|tips\b/i, a:()=> "Safety tips: meet in public first, bring a friend, verify student status, never send money before visiting, and use your school email when possible."},
+    ];
+    const fallback = "I can help with: map & locate-me, posting listings, search, filters, delete, Supabase/local mode, and safety tips.";
+
+    function answer(q){
+        for(const f of faq){ if(f.k.test(q)) return f.a(); }
+        return fallback;
+    }
+
+    addMsg("Hi! I can help you use the map, locate-me radius, posting, filters, and more. What do you need?");
+    function handleSend(){
+        const q = (input.value||'').trim();
+        if(!q) return;
+        addMsg(q,true);
+        input.value='';
+        setTimeout(()=> addMsg(answer(q)), 150);
+    }
+    send.onclick = handleSend;
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') handleSend(); });
+    })();
+    </script>
+    <!-- /Mini Helper Bot -->
+
+</body>
+
+</html>

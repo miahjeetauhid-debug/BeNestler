@@ -1,0 +1,172 @@
+:root {
+  --bg: #ffffff; /* Changed to white */
+  --panel: #f7f7f7; /* Changed to light gray */
+  --text: #1a1a1a; /* Changed to dark text */
+  --muted: #666666;
+  --accent: #2175f5; /* Changed to strong blue */
+  --good: #2d8a52;
+  --bad: #b13d3d;
+}
+
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font: 15px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+
+/* New Wrapper to center the entire app and make it bigger */
+.app-wrapper {
+  max-width: 1400px; /* Sets a maximum width for centering */
+  margin: 0 auto; /* Centers the wrapper horizontally */
+  box-shadow: 0 0 40px rgba(0,0,0,0.1); /* Subtle shadow for floating effect */
+  min-height: 100vh;
+}
+
+/* --- New Centered Topbar Layout (Stacked) --- */
+.topbar { 
+    /* Stack elements (brand, tabs, mode-toggle) vertically and center them */
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 16px; 
+    padding: 24px 16px 16px; /* Increased top padding for visual break */
+    background: var(--panel); 
+    border-bottom: 1px solid #e0e0e0; 
+    height: auto; /* Remove fixed height */
+    width: 100%;
+}
+.brand { 
+    /* Center the title block */
+    display: block; 
+    text-align: center;
+}
+.logo { 
+    font-size: 40px; /* Make logo bigger */
+    display: block; 
+    margin-bottom: 5px; 
+}
+.brand h1 { margin:0; font-size:30px } /* Make title bigger */
+.brand p { margin:0; color:var(--muted); font-size:12px; max-width: 400px; }
+
+.tabs { 
+    /* Center the navigation buttons below the title */
+    margin-left: 0; 
+    display:flex; 
+    gap: 12px; 
+    align-items:center;
+    justify-content: center; 
+    width: 100%; 
+}
+.tab { 
+    background: var(--bg); 
+    border:1px solid #cccccc; 
+    color:var(--text); 
+    padding:10px 14px; 
+    border-radius:10px; 
+    cursor:pointer 
+}
+.tab.active { 
+    background: var(--accent); 
+    border-color: var(--accent);
+    color: white; 
+}
+.tab:hover:not(.active) { background: #f0f0f0; }
+
+.mode-toggle { 
+    /* Center the mode toggle below the tabs */
+    display:flex; 
+    align-items:center; 
+    gap:10px; 
+    padding-left: 0; 
+    margin-top: 5px;
+}
+.mode-label { color:var(--muted); font-size:12px }
+
+
+/* Updated Button Styles to Blue */
+.btn { 
+  background: var(--accent); /* All buttons are blue */
+  border:1px solid #1a62c7; 
+  color:white; /* White text on blue buttons */
+  border-radius:10px; 
+  padding:8px 12px; 
+  cursor:pointer 
+}
+.btn:hover { background: #1a62c7; }
+.btn-primary { background: var(--accent); border-color: #1a62c7; }
+.btn-mini { padding:6px 10px; font-size:12px }
+
+/* switch */
+.switch { position:relative; display:inline-block; width:46px; height:26px; }
+.switch input { display:none; }
+.slider { position:absolute; cursor:pointer; inset:0; background:#cccccc; border-radius:26px; transition:.2s }
+.slider:before { content:""; position:absolute; height:20px; width:20px; left:3px; top:3px; background:white; border-radius:50%; transition:.2s }
+.switch input:checked + .slider { background:var(--accent); }
+.switch input:checked + .slider:before { transform:translateX(20px); }
+
+/* Pages and Map */
+.page { display:none; padding:16px }
+.page.visible { display:block }
+
+#map { width:100%; height:80vh; border-radius:12px; overflow:hidden; border:1px solid #ccc; }
+.map-actions { margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.locate-group { display:flex; gap:8px; align-items:center; }
+.radius-chips { display:flex; gap:6px; }
+.chip { 
+  background:var(--bg); 
+  border:1px solid #cccccc; 
+  color:var(--text); 
+  border-radius:999px; 
+  padding:6px 10px; 
+  font-size:12px; 
+  cursor:pointer; 
+}
+.chip.chip-active { 
+  background:var(--accent); 
+  border-color:var(--accent); 
+  color: white; 
+}
+
+.legend { color:var(--muted); padding:10px 2px; display:flex; gap:16px; align-items:center }
+.dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; border:2px solid #fff }
+.dot-need { background: var(--bad); }
+.dot-have { background: var(--good); }
+.dot-campus { background: #1273de; border-color:#0d4ea8; }
+
+.form { background:var(--panel); padding:16px; border-radius:12px; border:1px solid #e0e0e0; max-width:1100px }
+.row { display:grid; grid-template-columns: 180px 1fr 180px 1fr 180px 1fr; gap:12px; margin-bottom:12px; }
+.row label { color:var(--muted); align-self:center }
+.row input, .row select, .row textarea { width:100%; background:var(--bg); border:1px solid #cccccc; color:var(--text); border-radius:10px; padding:10px }
+.inline { display:flex; gap:8px; align-items:center }
+
+.hint { color:var(--muted); margin:2px 0 12px }
+
+.status { margin-top:8px; font-size:13px; color:var(--muted) }
+.status.ok { color:#2db36a }
+.status.err { color:#ff6e6e }
+
+.list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px }
+.listings { display:grid; gap:12px }
+.cardRow { background:var(--bg); border:1px solid #e0e0e0; border-radius:12px; padding:14px }
+.cardRow .actions { margin-top:10px; display:flex; gap:10px; flex-wrap:wrap }
+.badge { display:inline-block; font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #cccccc; margin-bottom:6px }
+.badge.need { background:#ffeeee; color:#c70000; border-color:#ff9da2 }
+.badge.have { background:#e8ffe8; color:#187339; border-color:#9be3b7 }
+
+.toast { position: fixed; left:50%; transform:translateX(-50%); bottom:20px; background:#f0f0f0; border:1px solid #ccc; color:#1a1a1a; padding:10px 14px; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,.1); z-index:9999; }
+.chk { display:flex; align-items:center; gap:8px }
+
+/* Media query for small screens */
+@media (max-width: 1000px){
+  /* Revert app-wrapper changes for mobile */
+  .app-wrapper { max-width: none; box-shadow: none; }
+  
+  /* Stack top bar elements on small screens */
+  .topbar { 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 10px; 
+    padding-top: 15px; 
+  }
+  .brand { text-align: center; }
+  .tabs { margin-left: 0; justify-content: center; }
+  .mode-toggle { padding-left: 0; margin-top: 10px; }
+  .row { grid-template-columns: 1fr; }
+}
